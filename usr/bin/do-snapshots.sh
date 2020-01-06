@@ -15,19 +15,19 @@ df -h /mnt/snapshots/*
 echo
 
 # Allow "weekly" or "monthly" to be specified on the command line.
-if [ "$1" = "weekly" ]; then
+if [[ "$1" = "weekly" ]]; then
 	DO_WEEKLY=true
 fi
-if [ "$1" = "monthly" ]; then
+if [[ "$1" = "monthly" ]]; then
 	DO_WEEKLY=true
 	DO_MONTHLY=true
 fi
 
 # Set DO_WEEKLY and DO_MONTHLY variables appropriately.
-if [ $DAY_OF_THE_WEEK -eq $SNAPSHOT_WEEKLY_DAY ]; then
+if [[ "$DAY_OF_THE_WEEK" -eq "$SNAPSHOT_WEEKLY_DAY" ]]; then
 	DO_WEEKLY=true
 fi
-if $DO_WEEKLY && [ $DAY_OF_THE_MONTH -le 7 ]; then
+if $DO_WEEKLY && (( DAY_OF_THE_MONTH <= 7 )); then
 	DO_MONTHLY=true
 fi
 
