@@ -2,13 +2,9 @@
 # rsnapshot.conf - rsnapshot configuration file #
 #################################################
 #                                               #
-# PLEASE BE AWARE OF THE FOLLOWING RULES:       #
+# PLEASE BE AWARE OF THE FOLLOWING RULE:        #
 #                                               #
 # This file requires tabs between elements      #
-#                                               #
-# Directories require a trailing slash:         #
-#   right: /home/                               #
-#   wrong: /home                                #
 #                                               #
 #################################################
 
@@ -26,7 +22,7 @@ config_version	1.2
 # snapshot_root directory. This is particularly useful if you are backing
 # up to removable media, such as a FireWire or USB drive.
 #
-no_create_root	0
+no_create_root	1
 
 #################################
 # EXTERNAL PROGRAM DEPENDENCIES #
@@ -76,6 +72,14 @@ cmd_rsnapshot_diff	/usr/bin/rsnapshot-diff
 #
 #cmd_postexec	/path/to/postexec/script
 
+# Paths to lvcreate, lvremove, mount and umount commands, for use with
+# Linux LVMs.
+#
+linux_lvm_cmd_lvcreate	/sbin/lvcreate
+linux_lvm_cmd_lvremove	/sbin/lvremove
+linux_lvm_cmd_mount	/bin/mount
+linux_lvm_cmd_umount	/bin/umount
+
 ############################################
 #              GLOBAL OPTIONS              #
 # All are optional, with sensible defaults #
@@ -98,7 +102,7 @@ loglevel	3
 # If you enable this, data will be written to the file you specify. The
 # amount of data written is controlled by the "loglevel" parameter.
 #
-#logfile		/var/log/rsnapshot
+#logfile	/var/log/rsnapshot
 
 # If enabled, rsnapshot will write a lockfile to prevent two instances
 # from running simultaneously (and messing up the snapshot_root).
@@ -106,6 +110,12 @@ loglevel	3
 # writable. Otherwise anyone can prevent the program from running.
 #
 lockfile	/var/run/rsnapshot.pid
+
+# By default, rsnapshot check lockfile, check if PID is running
+# and if not, consider lockfile as stale, then start
+# Enabling this stop rsnapshot if PID in lockfile is not running
+#
+#stop_on_stale_lockfile		0
 
 # Default rsync args. All rsync commands have at least these options set.
 #
@@ -146,15 +156,15 @@ ssh_args	-p 22 -i /root/.ssh/rsnapshot_dsa
 #include_file	/path/to/include/file
 #exclude_file	/path/to/exclude/file
 
-# If your version of rsync supports --link-dest, consider enable this.
+# If your version of rsync supports --link-dest, consider enabling this.
 # This is the best way to support special files (FIFOs, etc) cross-platform.
 # The default is 0 (off).
 #
-link_dest	0
+link_dest	1
 
 # When sync_first is enabled, it changes the default behaviour of rsnapshot.
 # Normally, when rsnapshot is called with its lowest interval
-# (i.e.: "rsnapshot hourly"), it will sync files AND rotate the lowest
+# (i.e.: "rsnapshot alpha"), it will sync files AND rotate the lowest
 # intervals. With sync_first enabled, "rsnapshot sync" handles the file sync,
 # and all interval calls simply rotate files. See the man page for more
 # details. The default is 0 (off).
@@ -168,9 +178,28 @@ sync_first	0
 #use_lazy_deletes	0
 
 # Number of rsync re-tries. If you experience any network problems or
-# network card issues that tend to cause ssh to crap-out with
-# "Corrupted MAC on input" errors, for example, set this to a non-zero
-# value to have the rsync operation re-tried
+# network card issues that tend to cause ssh to fail with errors like
+# "Corrupted MAC on input", for example, set this to a non-zero value
+# to have the rsync operation re-tried.
 #
 #rsync_numtries 0
 
+# LVM parameters. Used to backup with creating lvm snapshot before backup
+# and removing it after. This should ensure consistency of data in some special
+# cases
+#
+# LVM snapshot(s) size (lvcreate --size option).
+#
+#linux_lvm_snapshotsize	100M
+
+# Name to be used when creating the LVM logical volume snapshot(s).
+#
+#linux_lvm_snapshotname	rsnapshot
+
+# Path to the LVM Volume Groups.
+#
+#linux_lvm_vgpath	/dev
+
+# Mount point to use to temporarily mount the snapshot(s).
+#
+#linux_lvm_mountpath	/path/to/mount/lvm/snapshot/during/backup
