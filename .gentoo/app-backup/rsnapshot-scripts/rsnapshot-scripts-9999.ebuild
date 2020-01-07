@@ -39,5 +39,5 @@ src_install() {
     doexe usr/bin/*
 
     insinto /etc
-    doins etc/*
+    doins -r etc/*
 }
